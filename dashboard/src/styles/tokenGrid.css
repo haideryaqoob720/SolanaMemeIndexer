@@ -1,0 +1,400 @@
+.token-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Lamborghini-style toggle buttons */
+.lambo-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: linear-gradient(145deg, rgba(25, 25, 25, 0.9), rgba(15, 15, 15, 0.98));
+  border-radius: 12px;
+  padding: 15px 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  position: relative;
+  border: 1px solid rgba(51, 51, 51, 0.3);
+  overflow: hidden;
+}
+
+.lambo-filter-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-primary));
+  background-size: 200% 100%;
+  animation: gradientMove 4s linear infinite;
+}
+
+.lambo-filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--color-primary), #339933);
+  color: #000;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.lambo-filter-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(51, 204, 51, 0.4);
+}
+
+.lambo-filter-button .filter-icon {
+  stroke-width: 2.5px;
+}
+
+.lambo-toggles {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.lambo-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(80, 80, 80, 0.3);
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.lambo-toggle-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.05) 50%, 
+    rgba(255, 255, 255, 0) 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.lambo-toggle-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.lambo-toggle-btn.active {
+  background: rgba(38, 133, 76, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(38, 133, 76, 0.3);
+}
+
+.toggle-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.toggle-indicator.off {
+  background-color: #555;
+  border: 1px solid #777;
+}
+
+.toggle-indicator.on {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary);
+}
+
+.token-row {
+  padding: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.token-row:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.token-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(38, 133, 76, 0.3);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s var(--transition-ease);
+}
+
+.token-card:hover {
+  background-color: rgba(38, 133, 76, 0.05);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-primary);
+}
+
+.token-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.token-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.token-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.token-symbol {
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-right: 0.5rem;
+}
+
+.token-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.metric-label {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.metric-value {
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.transactions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.buy-count {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.sell-count {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.token-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.socials-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.social-icon {
+  color: var(--color-accent);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.social-icon:hover {
+  color: var(--color-accent-hover);
+  transform: scale(1.1);
+}
+
+.address-text {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.address-text:hover {
+  color: var(--color-primary);
+}
+
+/* Table specific styles */
+.token-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.token-table th {
+  background-color: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid rgba(38, 133, 76, 0.2);
+  user-select: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.token-table th:hover {
+  background-color: rgba(38, 133, 76, 0.07);
+}
+
+.token-table th.active {
+  color: var(--color-primary);
+}
+
+.token-table tbody tr {
+  background-color: var(--color-surface);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.token-table tbody tr:hover {
+  background-color: rgba(38, 133, 76, 0.05);
+  transform: scale(1.005);
+}
+
+.token-table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.token-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(38, 133, 76, 0.1);
+  vertical-align: middle;
+}
+
+.token-table tbody tr:hover td:first-child {
+  border-left: 3px solid var(--color-primary);
+}
+
+.sort-icon {
+  display: inline-block;
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.sort-icon.asc {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 640px) {
+  .token-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .token-content {
+    flex-direction: row;
+  }
+
+  .token-info {
+    margin-bottom: 0;
+    align-items: center;
+  }
+
+  .token-metrics {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .token-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  .token-table th, 
+  .token-table td {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .token-symbol {
+    font-size: 0.9rem;
+  }
+  
+  .metric-value {
+    font-size: 0.85rem;
+  }
+  
+  .lambo-filter-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .lambo-filter-button {
+    width: auto;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .lambo-filter-button span {
+    display: none;
+  }
+  
+  .lambo-toggles {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .lambo-toggle-btn {
+    flex: 0 0 auto;
+    justify-content: center;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .toggle-label {
+    display: none;
+  }
+  
+  .toggle-icon {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .toggle-indicator {
+    width: 10px;
+    height: 10px;
+  }
+}

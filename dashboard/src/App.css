@@ -1,0 +1,16 @@
+.app-container {
+  min-height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.app-content {
+  padding-top: 64px;
+  min-height: calc(100vh - 64px);
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    padding-top: 96px;
+  }
+}

@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model meme_token_test {
+  id                Int      @id @default(autoincrement())
+  created_at        DateTime @default(now())
+  mint              String   @unique
+  name              String
+  uri               String?
+  symbol            String
+  socials           Json?
+  top10holderEquity Float
+  creatorEquity     Float
+  totalSupply       Float
+  lpBurned          Boolean
+  lpBurnedAmount    Float
+  mintable          Boolean
+  freezeable        Boolean
+  tax               Float?
+  liquidityLock     Boolean
+  bondingCurveVault String?
+  creator           String
+  bondingProgress   Float
+  marketCap         Float
+  reserveSol        Float
+  reserveToken      Float
+  status            String
+  buyCount          Int
+  sellCount         Int
+  totalHolders      Int
+}
+
+model users {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  role       Role     @default(VIEWER)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+

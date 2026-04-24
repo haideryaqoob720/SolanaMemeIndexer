@@ -1,0 +1,724 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model tokens {
+  id                   Int             @id @default(autoincrement())
+  mint                 String          @unique
+  name                 String?
+  uri                  String?
+  symbol               String?
+  socials              String[]
+  decimals             Int             @default(6)
+  mintable             Boolean         @default(true)
+  freezeable           Boolean         @default(true)
+  top_10_holder_equity Float           @default(0.0)
+  creator              String?
+  creator_equity       Float           @default(0.0)
+  total_supply         Float           @default(0.0)
+  total_holders        Int             @default(0)
+  market_cap           Float           @default(0)
+  creator_balance      Float           @default(0)
+  sol_volume           Float           @default(0.0)
+  token_volume         Float           @default(0.0)
+  tokenVolumeBN        String?         @map("token_volume_bn")
+  solVolumeBN          String?         @map("sol_volume_bn")
+  buy_count            Float           @default(0.0)
+  sell_count           Float           @default(0.0)
+  total_tx             Float           @default(0.0)
+  created_at           DateTime        @default(now())
+  updated_at           DateTime?       @updatedAt
+  hot_monitoring       hot_monitoring?
+  pump_tokens          pump_tokens?
+  ray_token            raydium_tokens?
+  rug_check            rug_score?
+  pumpswap_tokens      pumpswapTokens?
+  sniperOrders         sniperOrders[]
+  tokenPools           tokenPools[]
+  pools                pools[]
+  hotTokens            hotTokens?
+}
+
+model pump_tokens {
+  id               Int      @id @default(autoincrement())
+  mint             String   @unique
+  bonding_curve    String?
+  bonding_progress Float?
+  reserve_sol      Float    @default(0)
+  reserve_token    Float    @default(0)
+  buy_count        Int      @default(0)
+  sell_count       Int      @default(0)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  token            tokens   @relation(fields: [mint], references: [mint])
+}
+
+model raydium_tokens {
+  id                 Int      @id @default(autoincrement())
+  mint               String   @unique
+  market_account     String
+  reserve_sol        Float
+  reserve_token      Float
+  lp_burn            Float
+  lp_burned          Boolean
+  lp_reserve         Float
+  liquidity_in_sol   Float    @default(0.0)
+  price_in_sol       Float    @default(0.0)
+  price_in_usd       Float    @default(0.0)
+  liquidity_in_usd   Float    @default(0.0)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  is_quote_vault_sol Boolean  @default(true)
+  base_vault         String?  @db.VarChar(255)
+  quote_vault        String?  @db.VarChar(255)
+  token              tokens   @relation(fields: [mint], references: [mint])
+}
+
+model pumpswapTokens {
+  id              Int      @id @default(autoincrement())
+  mint            String   @unique @db.VarChar
+  marketAccount   String   @map("market_account") @db.VarChar
+  reserveSol      String   @map("reserve_sol") @db.VarChar
+  reserveToken    String   @map("reserve_token") @db.VarChar
+  lpBurn          String   @map("lp_burn") @db.VarChar
+  lpBurned        Boolean  @map("lp_burned")
+  liquidityInSol  Float    @default(0.0) @map("liquidity_in_sol")
+  liquidityInUsd  Float    @default(0.0) @map("liquidity_in_usd")
+  priceInSol      Float    @default(0.0) @map("price_in_sol")
+  priceInUsd      Float    @default(0.0) @map("price_in_usd")
+  isQuoteVaultSol Boolean  @default(true) @map("is_quote_vault_sol")
+  baseVault       String?  @map("base_vault") @db.VarChar
+  quoteVault      String?  @map("quote_vault") @db.VarChar
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  token           tokens   @relation(fields: [mint], references: [mint], onDelete: Cascade, onUpdate: NoAction, map: "fk_token")
+
+  @@map("pumpswap_tokens")
+}
+
+model tokenPools {
+  id            Int       @id @default(autoincrement())
+  mint          String    @db.VarChar(255)
+  poolAddress   String    @unique(map: "unique_pool_address") @map("pool_address") @db.VarChar(255)
+  dex           String    @db.VarChar(255)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  signature     String?   @db.VarChar(255)
+  priceInSol    Float     @default(0.0) @map("price_in_sol")
+  solReserves   Float     @default(0.0) @map("sol_reserves")
+  tokenReserves Float     @default(0.0) @map("token_reserves")
+  token         tokens    @relation(fields: [mint], references: [mint], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("token_pools")
+}
+
+model transactions {
+  id                   Int      @id @default(autoincrement())
+  mint                 String
+  is_buy               Boolean
+  sol_amount           Float
+  token_amount         Float
+  status               Int      @default(0)
+  dex                  Int
+  user                 String
+  token_price_in_sol   Float
+  timestamp            Int?
+  signature            String   @unique
+  created_at           DateTime @default(now())
+  is_liquidity_removed Boolean?
+
+  @@index([mint], map: "idx_transactions_mint")
+}
+
+model hot_monitoring {
+  id           Int    @id @default(autoincrement())
+  mint         String @unique
+  sol_volume   Float  @default(0.0)
+  token_volume Float  @default(0.0)
+  token        tokens @relation(fields: [mint], references: [mint])
+}
+
+model rug_score {
+  id                      Int      @id @default(autoincrement())
+  created_at              DateTime @default(now())
+  mint                    String   @unique
+  is_website_valid        Boolean
+  has_tweets              Boolean
+  number_of_twitters      Int
+  not_mintable_risk       Boolean
+  not_freeze_risk         Boolean
+  not_auto_freeze         Boolean
+  permanent_control       Boolean
+  has_concerning_metadata Boolean
+  liquidity_confirmed     Boolean
+  liquidity_level         Boolean
+  custom_fees             Boolean
+  recent_activity         Boolean
+  all_pools               Boolean
+  lp_providers            Boolean
+  stable_contract         Boolean
+  team_wallet_holdings    Boolean
+  top_10_holders          Boolean
+  tx_24h                  Boolean
+  vol_24h                 Boolean
+  token                   tokens   @relation(fields: [mint], references: [mint])
+}
+
+model database_performance {
+  operation_type String   @db.VarChar(50)
+  table_name     String   @db.VarChar(255)
+  execution_time Float
+  rows_affected  Int?
+  query_plan     Json?
+  extra_data     Json?
+  id             Int      @id @default(autoincrement())
+  created_at     DateTime @db.Timestamptz(6)
+  updated_at     DateTime @db.Timestamptz(6)
+
+  @@index([id], map: "ix_database_performance_id")
+  @@index([operation_type], map: "ix_database_performance_operation_type")
+}
+
+model holder_snapshot {
+  token_id              Int
+  timestamp             DateTime  @db.Timestamptz(6)
+  holder_count          Int?
+  holder_distribution   Json?
+  concentration_metrics Json?
+  id                    Int       @id @default(autoincrement())
+  created_at            DateTime  @db.Timestamptz(6)
+  updated_at            DateTime  @db.Timestamptz(6)
+  meme_coin             meme_coin @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([token_id, timestamp], map: "uq_holder_snapshot_token_timestamp")
+  @@index([id], map: "ix_holder_snapshot_id")
+  @@index([timestamp], map: "ix_holder_snapshot_timestamp")
+}
+
+model meme_coin {
+  address                  String               @unique(map: "ix_meme_coin_address") @db.VarChar(255)
+  name                     String?              @db.VarChar(255)
+  symbol                   String?              @db.VarChar(255)
+  decimals                 Int?
+  total_supply             BigInt?
+  creator_address          String?              @db.VarChar(255)
+  creation_tx_hash         String?
+  contract_verified        Boolean?
+  contract_code            String?
+  contract_analysis        Json?
+  is_active                Boolean
+  monitoring_status        String?              @db.VarChar(50)
+  circulating_supply       BigInt?
+  burned_supply            BigInt?
+  bonding_curve_address    String?              @db.VarChar(255)
+  bonding_curve_state      Json?
+  is_curve_complete        Boolean?
+  tokens_left              BigInt?
+  bonding_curve_completion Float?
+  king_of_hill_progress    Float?
+  price_usd                Float?
+  market_cap_usd           Float?
+  volume_24h_usd           Float?
+  liquidity                Float?
+  liquidity_pairs          Json?
+  holder_count             Int?
+  holder_distribution      Json?
+  top_holders              Json?
+  risk_score               Float?
+  risk_factors             Json?
+  whale_holdings           Float?
+  smart_money_flow         Float?
+  holder_growth_rate       Float?
+  launch_date              DateTime?            @db.Timestamptz(6)
+  created_at               DateTime             @db.Timestamptz(6)
+  id                       Int                  @id @default(autoincrement())
+  updated_at               DateTime             @db.Timestamptz(6)
+  holder_snapshot          holder_snapshot[]
+  token_metadata           token_metadata?
+  token_price              token_price[]
+  token_tier               token_tier[]
+  trading_volume           trading_volume[]
+  wallet_analysis          wallet_analysis[]
+  wallet_transaction       wallet_transaction[]
+
+  @@index([id], map: "ix_meme_coin_id")
+}
+
+model r_p_c_performance {
+  endpoint      String   @db.VarChar(255)
+  request_type  String   @db.VarChar(50)
+  response_time Float
+  success       Boolean
+  error_type    String?  @db.VarChar(255)
+  error_message String?  @db.VarChar
+  extra_data    Json?
+  id            Int      @id @default(autoincrement())
+  created_at    DateTime @db.Timestamptz(6)
+  updated_at    DateTime @db.Timestamptz(6)
+
+  @@index([endpoint], map: "ix_r_p_c_performance_endpoint")
+  @@index([id], map: "ix_r_p_c_performance_id")
+}
+
+model task_performance {
+  task_name      String   @db.VarChar(255)
+  execution_time Float
+  success        Boolean
+  error_message  String?  @db.VarChar
+  memory_usage   Float?
+  cpu_usage      Float?
+  extra_data     Json?
+  id             Int      @id @default(autoincrement())
+  created_at     DateTime @db.Timestamptz(6)
+  updated_at     DateTime @db.Timestamptz(6)
+
+  @@index([id], map: "ix_task_performance_id")
+  @@index([task_name], map: "ix_task_performance_task_name")
+}
+
+model tier_alert {
+  token_tier_id   Int
+  alert_type      String     @db.VarChar(50)
+  severity        String     @db.VarChar(20)
+  message         String
+  resolved        Boolean?
+  resolved_at     DateTime?  @db.Timestamptz(6)
+  resolution_note String?
+  alert_data      Json?
+  id              Int        @id @default(autoincrement())
+  created_at      DateTime   @db.Timestamptz(6)
+  updated_at      DateTime   @db.Timestamptz(6)
+  token_tier      token_tier @relation(fields: [token_tier_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_tier_alert_id")
+}
+
+model tier_transition {
+  token_tier_id    Int
+  from_tier        tierlevel?
+  to_tier          tierlevel
+  transition_time  DateTime   @db.Timestamptz(6)
+  confidence_score Float?
+  reason           String?
+  metrics_snapshot Json?
+  id               Int        @id @default(autoincrement())
+  created_at       DateTime   @db.Timestamptz(6)
+  updated_at       DateTime   @db.Timestamptz(6)
+  token_tier       token_tier @relation(fields: [token_tier_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_tier_transition_id")
+}
+
+model token_metadata {
+  token_id        Int       @unique
+  website         String?   @db.VarChar(255)
+  telegram        String?   @db.VarChar(255)
+  twitter         String?   @db.VarChar(255)
+  discord         String?   @db.VarChar(255)
+  description     String?
+  tags            Json?
+  custom_metadata Json?
+  id              Int       @id @default(autoincrement())
+  created_at      DateTime  @db.Timestamptz(6)
+  updated_at      DateTime  @db.Timestamptz(6)
+  meme_coin       meme_coin @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_token_metadata_id")
+}
+
+model token_price {
+  token_id       Int
+  timestamp      DateTime  @db.Timestamptz(6)
+  price_usd      Float
+  volume_usd     Float?
+  market_cap_usd Float?
+  liquidity_usd  Float?
+  id             Int       @id @default(autoincrement())
+  created_at     DateTime  @db.Timestamptz(6)
+  updated_at     DateTime  @db.Timestamptz(6)
+  meme_coin      meme_coin @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([token_id, timestamp], map: "uq_token_price_token_timestamp")
+  @@index([id], map: "ix_token_price_id")
+  @@index([timestamp], map: "ix_token_price_timestamp")
+}
+
+model token_tier {
+  token_id             Int
+  token_address        String            @unique(map: "ix_token_tier_token_address") @db.VarChar(255)
+  current_tier         tierlevel
+  previous_tier        tierlevel?
+  check_frequency      Int
+  is_active            Boolean?
+  is_monitoring_paused Boolean?
+  processing_priority  Int?
+  last_checked         DateTime?         @db.Timestamptz(6)
+  next_check_at        DateTime?         @db.Timestamptz(6)
+  tier_updated_at      DateTime?         @db.Timestamptz(6)
+  confidence_score     Float?
+  market_cap           BigInt?
+  volume_24h           BigInt?
+  holder_count         Int?
+  price_change_24h     Float?
+  tier_history         Json?
+  monitoring_notes     String?
+  id                   Int               @id @default(autoincrement())
+  created_at           DateTime          @db.Timestamptz(6)
+  updated_at           DateTime          @db.Timestamptz(6)
+  tier_alert           tier_alert[]
+  tier_transition      tier_transition[]
+  meme_coin            meme_coin         @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([current_tier], map: "ix_token_tier_current_tier")
+  @@index([id], map: "ix_token_tier_id")
+}
+
+model trading_volume {
+  token_id           Int
+  timestamp          DateTime  @db.Timestamptz(6)
+  volume_usd         Float?
+  trade_count        Int?
+  buyer_count        Int?
+  seller_count       Int?
+  whale_volume       Float?
+  smart_money_volume Float?
+  id                 Int       @id @default(autoincrement())
+  created_at         DateTime  @db.Timestamptz(6)
+  updated_at         DateTime  @db.Timestamptz(6)
+  meme_coin          meme_coin @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([token_id, timestamp], map: "uq_trading_volume_token_timestamp")
+  @@index([id], map: "ix_trading_volume_id")
+  @@index([timestamp], map: "ix_trading_volume_timestamp")
+}
+
+model wallet_analysis {
+  token_id            Int
+  analysis_timestamp  DateTime  @db.Timestamptz(6)
+  risk_score          Float?
+  early_entries       Json?
+  wallet_clusters     Json?
+  coordinated_actions Json?
+  high_risk_wallets   Json?
+  id                  Int       @id @default(autoincrement())
+  created_at          DateTime  @db.Timestamptz(6)
+  updated_at          DateTime  @db.Timestamptz(6)
+  meme_coin           meme_coin @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id], map: "ix_wallet_analysis_id")
+}
+
+model wallet_transaction {
+  token_id         Int
+  token_address    String    @db.VarChar(255)
+  wallet_address   String    @db.VarChar(255)
+  transaction_type String    @db.VarChar(50)
+  amount           Float
+  price            Float
+  timestamp        DateTime  @db.Timestamptz(6)
+  mcap_at_time     Float?
+  id               Int       @id @default(autoincrement())
+  created_at       DateTime  @db.Timestamptz(6)
+  updated_at       DateTime  @db.Timestamptz(6)
+  meme_coin        meme_coin @relation(fields: [token_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([token_id, timestamp], map: "idx_wallet_token_time")
+  @@index([id], map: "ix_wallet_transaction_id")
+  @@index([token_address], map: "ix_wallet_transaction_token_address")
+  @@index([transaction_type], map: "ix_wallet_transaction_transaction_type")
+  @@index([wallet_address], map: "ix_wallet_transaction_wallet_address")
+}
+
+model permissions {
+  id                 Int      @id @default(autoincrement())
+  role               Role     @unique
+  filter_permissions Json
+  trade_permissions  Json
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+}
+
+model rug_standards {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  standard   Json?
+}
+
+model sniperStrategies {
+  id                     Int            @id @default(autoincrement())
+  userId                 Int            @map("userId")
+  mintable               Boolean        @default(false)
+  freezeable             Boolean        @default(false)
+  liquidityAmount        Float          @default(80.0) @map("liquidity_amount")
+  top10HoldingPercentage Float          @default(10.0) @map("top_10_holding_percentage")
+  bundlePercentage       Float          @default(5.0) @map("bundle_percentage")
+  active                 Boolean        @default(false)
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @default(now()) @map("updated_at")
+  name                   String         @default(uuid())
+  profit                 Float          @default(10.0)
+  stopLoss               Float          @default(0.95) @map("stop_loss")
+  orderAmountInSol       Float          @default(0.0) @map("order_amount_in_sol")
+  isOnChain              Boolean        @default(false) @map("is_on_chain")
+  market_cap             Float?
+  volume                 Float?
+  total_tx               Float?
+  buy                    Float?
+  sell                   Float?
+  socials                String[]
+  totalHolders           Int?           @map("total_holders")
+  sniperOrders           sniperOrders[]
+  user                   users          @relation(fields: [userId], references: [id])
+
+  @@map("sniper_strategies")
+}
+
+model sniperOrders {
+  id               Int               @id @default(autoincrement())
+  mint             String            @db.VarChar
+  rayMint          String            @map("ray_mint") @db.VarChar
+  userId           Int               @map("userId")
+  strategyId       Int               @map("strategyId")
+  decimals         Int
+  orderAmountInUsd Float             @map("order_amount_in_usd")
+  buyingPrice      Float?            @map("buying_price")
+  takeProfitPrice  Float?            @map("take_profit_price")
+  stopLossPrice    Float?            @map("stop_loss_price")
+  status           String            @db.VarChar
+  initialPrice     Json              @map("initial_price")
+  finalPrice       Json              @map("final_price")
+  tokenBuyAmount   Json              @map("token_buy_amount")
+  tokenSellAmount  Json              @map("token_sell_amount")
+  buyTxHash        String?           @map("buy_tx_hash") @db.VarChar
+  sellTxHash       String?           @map("sell_tx_hash") @db.VarChar
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  buyTime          DateTime?         @map("buy_time") @db.Timestamptz(6)
+  sellTime         DateTime?         @map("sell_time") @db.Timestamptz(6)
+  buyAmount        Json?             @map("buy_amount") @db.Json
+  sellAmount       Json?             @map("sell_amount") @db.Json
+  dex              String            @default("Raydium") @db.VarChar(255)
+  route            String?           @db.VarChar(255)
+  txFees           Float             @default(0.0) @map("tx_fees")
+  order_analytics  order_analytics[]
+  token            tokens            @relation(fields: [mint], references: [mint])
+  sniperStrategy   sniperStrategies  @relation(fields: [strategyId], references: [id])
+  user             users             @relation(fields: [userId], references: [id])
+
+  @@unique([mint, strategyId, userId], map: "sniper_orders_mint_strategyId_userId_unique")
+  @@index([userId])
+  @@index([strategyId])
+  @@index([mint])
+  @@index([status])
+  @@map("sniper_orders")
+}
+
+model strategies {
+  id               Int      @id @default(autoincrement())
+  user_id          Int      @unique
+  market_cap_min   Decimal? @db.Decimal
+  market_cap_max   Decimal? @db.Decimal
+  transactions_min Int?
+  transactions_max Int?
+  buys_min         Int?
+  buys_max         Int?
+  sells_min        Int?
+  sells_max        Int?
+  volume_min       Decimal? @db.Decimal
+  volume_max       Decimal? @db.Decimal
+  tx_min           Int?
+  tx_max           Int?
+  holding_min      Decimal? @db.Decimal
+  holding_max      Decimal? @db.Decimal
+  liquidity_min    Decimal? @db.Decimal
+  liquidity_max    Decimal? @db.Decimal
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now()) @updatedAt
+  users            users    @relation(fields: [user_id], references: [id])
+}
+
+model user_wallets {
+  id          Int      @id @default(autoincrement())
+  public_key  String   @unique
+  private_key String   @unique
+  email       String   @unique
+  created_at  DateTime @default(now())
+  users       users    @relation(fields: [email], references: [email])
+}
+
+model users {
+  id                Int                @id @default(autoincrement())
+  email             String             @unique
+  password          String
+  role              Role               @default(VIEWER)
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  sniperOrders      sniperOrders[]
+  sniper_strategies sniperStrategies[]
+  strategies        strategies?
+  user_wallets      user_wallets?
+}
+
+model hotTokens {
+  id           Int      @id @default(autoincrement())
+  mint         String   @unique @db.VarChar(255)
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  updated_at   DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  is_to_delete Boolean? @default(false)
+  token        tokens   @relation(fields: [mint], references: [mint], onDelete: NoAction, onUpdate: NoAction, map: "fk_token")
+
+  @@map("hot_tokens")
+}
+
+model deleted_sniper_orders {
+  id                Int       @id @default(autoincrement())
+  created_at        DateTime  @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  deleted_id        Int
+  mint              String?   @db.VarChar(255)
+  ray_mint          String?
+  user_id           Int
+  buying_price      Float     @default(0.0)
+  stop_loss_price   Float     @default(0.0)
+  take_profit_price Float     @default(0.0)
+  status            String?
+}
+
+model deleted_users {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  deleted_id Int
+  email      String   @db.VarChar(255)
+}
+
+model order_analytics {
+  id              Int          @id @default(autoincrement())
+  mint            String
+  orderid         Int
+  creator_equity  Float        @default(0.0)
+  total_supply    Float        @default(0.0)
+  total_holders   Int          @default(0)
+  market_cap      Float        @default(0)
+  creator_balance Float        @default(0)
+  sol_volume      Float        @default(0.0)
+  token_volume    Float        @default(0.0)
+  buy_count       Float        @default(0.0)
+  sell_count      Float        @default(0.0)
+  total_tx        Float        @default(0.0)
+  decimals        Int          @default(6)
+  token_volume_bn String?
+  sol_volume_bn   String?
+  reserve_sol     String?
+  reserve_token   String?
+  dex             Int?
+  sniper_orders   sniperOrders @relation(fields: [orderid], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sniper_routes_stats {
+  id                 Int       @id @default(autoincrement())
+  dex                String    @db.VarChar(255)
+  route              String    @db.VarChar(255)
+  price              Float
+  buy_request_time   DateTime? @db.Timestamp(6)
+  buy_response_time  DateTime? @db.Timestamp(6)
+  sell_request_time  DateTime? @db.Timestamp(6)
+  sell_response_time DateTime? @db.Timestamp(6)
+}
+
+enum tierlevel {
+  SIGNAL
+  HOT
+  WARM
+  COLD
+  RUGGED
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+
+// for testing delete later
+
+
+model sniperOrdersTemp {
+  id               Int               @id @default(autoincrement())
+  mint             String            @db.VarChar
+  rayMint          String            @map("ray_mint") @db.VarChar
+  userId           Int               @map("user_id")
+  strategyId       Int               @map("strategy_id")
+  decimals         Int
+  orderAmountInUsd Float             @map("order_amount_in_usd")
+  buyingPrice      Float?            @map("buying_price")
+  takeProfitPrice  Float?            @map("take_profit_price")
+  stopLossPrice    Float?            @map("stop_loss_price")
+  status           String            @db.VarChar
+  initialPrice     Json              @map("initial_price")
+  finalPrice       Json              @map("final_price")
+  tokenBuyAmount   Json              @map("token_buy_amount")
+  tokenSellAmount  Json              @map("token_sell_amount")
+  buyTxHash        String?           @map("buy_tx_hash") @db.VarChar
+  sellTxHash       String?           @map("sell_tx_hash") @db.VarChar
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  buyTime          DateTime?         @map("buy_time") @db.Timestamptz(6)
+  sellTime         DateTime?         @map("sell_time") @db.Timestamptz(6)
+  buyAmount        Json?             @map("buy_amount") @db.Json
+  sellAmount       Json?             @map("sell_amount") @db.Json
+  dex              String            @default("Raydium") @db.VarChar(255)
+  route            String?           @db.VarChar(255)
+  txFees           Float             @default(0.0) @map("tx_fees")
+
+  @@map("sniper_orders_temp")
+}
+
+model pools {
+  id             Int      @id @default(autoincrement())
+  mint           String
+  poolAddress    String   @unique @map("pool_address")
+  dex            String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  priceInSol     Float    @default(0.0) @map("price_in_sol")
+  priceInUsd     Float    @default(0.0) @map("price_in_usd")
+  solReserves    String   @map("sol_reserves")
+  tokenReserves  String   @map("token_reserves")
+  liquidityInSol Float    @default(0.0) @map("liquidity_in_sol")
+  liquidityInUsd Float    @default(0.0) @map("liquidity_in_usd")
+  totalTx        Int      @default(0) @map("total_tx")
+  buyTx          Int      @default(0) @map("buy_tx")
+  sellTx         Int      @default(0) @map("sell_tx")
+  token          tokens   @relation(fields: [mint], references: [mint], onDelete: Cascade)
+}
+
+model poolTransactions {
+  id                 Int      @id @default(autoincrement())
+  mint               String
+  pool               String
+  isBuy              Boolean  @map("is_buy")
+  solAmount          Float    @map("sol_amount")
+  tokenAmount        Float    @map("token_amount")
+  dex                Int
+  user               String
+  tokenPriceInSol    Float    @map("token_price_in_sol")
+  isLiquidityRemoved Boolean? @map("is_liquidity_removed")
+  timestamp          Int?
+  signature          String
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("pool_transactions")
+}
+ model orderMetrics{
+ id Int @default(autoincrement())
+
+ @@map("order_metrics")
+ }
